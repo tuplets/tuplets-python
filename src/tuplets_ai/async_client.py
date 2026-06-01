@@ -7,7 +7,6 @@ import httpx
 from .config import DEFAULT_BASE_URL, DEFAULT_TIMEOUT_SECONDS, DEFAULT_USER_AGENT, normalize_base_url
 from .errors import raise_for_response
 from .resources.jobs import AsyncJobsResource
-from .resources.solutions import AsyncSolutionsResource
 from .resources.uploads import AsyncUploadsResource
 
 
@@ -27,7 +26,6 @@ class AsyncTupletsClient:
 
         self.jobs = AsyncJobsResource(self)
         self.uploads = AsyncUploadsResource(self)
-        self.solutions = AsyncSolutionsResource(self)
 
     async def __aenter__(self) -> "AsyncTupletsClient":
         return self

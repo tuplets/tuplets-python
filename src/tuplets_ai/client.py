@@ -7,7 +7,6 @@ import httpx
 from .config import DEFAULT_BASE_URL, DEFAULT_TIMEOUT_SECONDS, DEFAULT_USER_AGENT, normalize_base_url
 from .errors import raise_for_response
 from .resources.jobs import JobsResource
-from .resources.solutions import SolutionsResource
 from .resources.uploads import UploadsResource
 
 
@@ -27,7 +26,6 @@ class TupletsClient:
 
         self.jobs = JobsResource(self)
         self.uploads = UploadsResource(self)
-        self.solutions = SolutionsResource(self)
 
     def __enter__(self) -> "TupletsClient":
         return self

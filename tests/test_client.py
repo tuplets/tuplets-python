@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import httpx
 
-from tuplets_ai import JobCreateParams, TupletsClient
+from tuplets_ai import DefaultHttpxClient, JobCreateParams, TupletsClient
 
 
 def test_create_from_url_sends_bearer_auth_and_form_fields():
@@ -52,10 +52,6 @@ def test_wait_polls_until_completion():
                 "transcription_model": "standard",
                 "diarization": False,
                 "pii_processing": False,
-                "insights": False,
-                "insights_fast": False,
-                "insights_deep": False,
-                "insights_tier": None,
                 "estimated_cost_usd": 0.1,
                 "billed_cost_usd": None,
                 "billing_status": "pending",
@@ -79,10 +75,6 @@ def test_wait_polls_until_completion():
                 "transcription_model": "standard",
                 "diarization": False,
                 "pii_processing": False,
-                "insights": False,
-                "insights_fast": False,
-                "insights_deep": False,
-                "insights_tier": None,
                 "estimated_cost_usd": 0.1,
                 "billed_cost_usd": 0.1,
                 "billing_status": "billed",
@@ -141,3 +133,34 @@ def test_upload_bytes_uses_signed_url_without_authorization_header():
 
     assert seen_headers["authorization"] == ""
     assert seen_headers["content_type"] == "audio/wav"
+
+
+def test_default_httpx_client_can_be_configured_without_direct_httpx_client_import():
+    seen_path = ""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal seen_path
+        seen_path = str(request.url)
+        return httpx.Response(
+            201,
+            json={
+                "status": "accepted",
+                "id": "job_123",
+                "status_url": "https://api.tuplets.ai/jobs/job_123",
+                "cancel_url": "https://api.tuplets.ai/jobs/job_123",
+                "cancel_token": "cancel_123",
+            },
+        )
+
+    client = TupletsClient(
+        api_key="tb_test_key",
+        http_client=DefaultHttpxClient(
+            transport=httpx.MockTransport(handler),
+            base_url="https://api.tuplets.ai",
+        ),
+    )
+
+    job = client.jobs.create_from_url("https://storage.example.com/call.wav")
+
+    assert job.id == "job_123"
+    assert seen_path == "https://api.tuplets.ai/jobs"

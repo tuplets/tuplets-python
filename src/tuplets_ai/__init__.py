@@ -1,4 +1,5 @@
 from ._version import __version__
+from ._http import DefaultAsyncHttpxClient, DefaultHttpxClient
 from .async_client import AsyncTupletsClient
 from .client import TupletsClient
 from .errors import (
@@ -20,8 +21,6 @@ from .models import (
     JobCreateParams,
     JobList,
     JobStatus,
-    SolutionsInquiryRequest,
-    SolutionsInquirySubmission,
     UploadedAudioReference,
 )
 
@@ -31,6 +30,8 @@ __all__ = [
     "AuthenticationError",
     "BrowserUploadTarget",
     "ConflictError",
+    "DefaultAsyncHttpxClient",
+    "DefaultHttpxClient",
     "GoneError",
     "JobAccepted",
     "JobCreateParams",
@@ -40,8 +41,6 @@ __all__ = [
     "PaymentRequiredError",
     "PermissionDeniedError",
     "RateLimitError",
-    "SolutionsInquiryRequest",
-    "SolutionsInquirySubmission",
     "TupletsClient",
     "TupletsError",
     "UploadedAudioReference",

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import Any, Literal, Mapping
 
@@ -7,30 +8,34 @@ from ._utils import bool_to_api
 
 TranscriptionModel = Literal["standard", "premium"]
 JobState = Literal["queued", "running", "completed", "failed"]
-InsightsTier = Literal["fast", "deep"]
 TranscriptPayload = dict[str, Any]
 
 
 @dataclass(slots=True)
 class JobCreateParams:
+    """Parameters for job submission.
+
+    When ``diarization`` is ``True``, speaker attribution is treated as a
+    required outcome. Jobs can finish as failed if usable diarization cannot
+    be produced.
+    """
+
     language: str = "auto"
     transcription_model: TranscriptionModel = "standard"
     diarization: bool = False
     pii_processing: bool = False
-    insights: bool = False
-    insights_fast: bool = False
-    insights_deep: bool = False
+    analytics: Mapping[str, Any] | None = None
 
     def as_form_fields(self) -> dict[str, str]:
-        return {
+        fields = {
             "language": self.language,
             "transcription_model": self.transcription_model,
             "diarization": bool_to_api(self.diarization),
             "pii_processing": bool_to_api(self.pii_processing),
-            "insights": bool_to_api(self.insights),
-            "insights_fast": bool_to_api(self.insights_fast),
-            "insights_deep": bool_to_api(self.insights_deep),
         }
+        if self.analytics is not None:
+            fields["analytics"] = json.dumps(dict(self.analytics))
+        return fields
 
 
 @dataclass(slots=True)
@@ -81,18 +86,22 @@ class BrowserUploadTarget:
 
 @dataclass(slots=True)
 class JobStatus:
+    """Normalized job status returned by the API.
+
+    ``result`` is populated only for completed jobs. When ``diarization`` is
+    enabled, failed speaker attribution leaves ``result`` as ``None`` and
+    surfaces the failure detail through ``error_message``.
+    """
+
     id: str
-    status: str
+    status: JobState
     result: TranscriptPayload | None
     error_message: str | None
     audio_duration_seconds: float | None
     transcription_model: TranscriptionModel
     diarization: bool
     pii_processing: bool
-    insights: bool
-    insights_fast: bool
-    insights_deep: bool
-    insights_tier: InsightsTier | None
+    analytics: dict[str, Any] | None
     estimated_cost_usd: float | None
     billed_cost_usd: float | None
     billing_status: str | None
@@ -118,10 +127,7 @@ class JobStatus:
             transcription_model=str(payload.get("transcription_model", "standard")),
             diarization=bool(payload.get("diarization", False)),
             pii_processing=bool(payload.get("pii_processing", False)),
-            insights=bool(payload.get("insights", False)),
-            insights_fast=bool(payload.get("insights_fast", False)),
-            insights_deep=bool(payload.get("insights_deep", False)),
-            insights_tier=payload.get("insights_tier"),
+            analytics=dict(payload["analytics"]) if isinstance(payload.get("analytics"), dict) else None,
             estimated_cost_usd=float(payload["estimated_cost_usd"]) if payload.get("estimated_cost_usd") is not None else None,
             billed_cost_usd=float(payload["billed_cost_usd"]) if payload.get("billed_cost_usd") is not None else None,
             billing_status=payload.get("billing_status"),
