@@ -2,13 +2,43 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import Any, Literal, Mapping
+from typing import Any, Literal, Mapping, TypedDict
 
 from ._utils import bool_to_api
 
 TranscriptionModel = Literal["standard", "premium"]
 JobState = Literal["queued", "running", "completed", "failed"]
 TranscriptPayload = dict[str, Any]
+
+
+class FeatureExecution(TypedDict, total=False):
+    """Execution metadata nested under completed job results (`result.feature_execution`)."""
+
+    transcription_requested: bool
+    transcription_applied: bool
+    transcription_model_requested: TranscriptionModel
+    transcription_model_applied: TranscriptionModel | None
+    transcription_elapsed_seconds: float
+    diarization_requested: bool
+    diarization_applied: bool
+    diarization_elapsed_seconds: float
+    pii_processing_requested: bool
+    pii_processing_applied: bool
+    pii_processing_elapsed_seconds: float
+    pii_processing_language: str
+    pii_processing_skip_reason: str
+    generic_analytics_requested: bool
+    generic_analytics_tier_requested: str | None
+    generic_analytics_applied: bool
+    generic_analytics_tier_applied: str | None
+    generic_analytics_elapsed_seconds: float
+    analytics_requested: bool
+    analytics_profile_requested: str | None
+    analytics_applied: bool
+    analytics_elapsed_seconds: float
+    custom_analytics_requested: bool
+    custom_analytics_applied: bool
+    custom_analytics_elapsed_seconds: float
 
 
 @dataclass(slots=True)

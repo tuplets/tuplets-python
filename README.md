@@ -52,7 +52,9 @@ Every authenticated request sends `Authorization: Bearer tb_...`.
 ## Client configuration
 
 ```python
-from tuplets_ai import DefaultHttpxClient, TupletsClient
+import httpx
+
+from tuplets_ai import TupletsClient
 
 # Custom base URL (defaults to https://api.tuplets.ai)
 client = TupletsClient(
@@ -61,8 +63,8 @@ client = TupletsClient(
     timeout=120.0,
 )
 
-# Reuse a customized HTTP client (connection pooling, proxies, retries, etc.)
-http = DefaultHttpxClient(base_url="https://api.tuplets.ai", timeout=120.0)
+# Reuse your own httpx client (connection pooling, proxies, retries, etc.)
+http = httpx.Client(base_url="https://api.tuplets.ai", timeout=120.0)
 client = TupletsClient(api_key="tb_your_api_key", http_client=http)
 
 with client:
@@ -71,7 +73,7 @@ with client:
 client.close()
 ```
 
-Use `AsyncTupletsClient` the same way with `DefaultAsyncHttpxClient(...)` and `async with`.
+Use `AsyncTupletsClient` the same way with `httpx.AsyncClient` and `async with`.
 
 ## Submitting transcription jobs
 
@@ -180,6 +182,8 @@ for segment in transcript.get("segments", []):
 ```
 
 When `diarization=True`, segments include speaker labels. Completed jobs may also include an `analytics` object if analytics were requested.
+
+Downloaded JSON includes `feature_execution.transcription_model_requested` and `feature_execution.transcription_model_applied` so archived result files record whether `standard` or `premium` transcription ran.
 
 ### List and cancel jobs
 
